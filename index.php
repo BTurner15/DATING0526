@@ -1,9 +1,9 @@
 <?php
 /* Bruce Turner, Professor Ostrander, Spring 2019
  * IT 328 Full Stack Web Development
- * Dating III Assignment: incorporate classes
+ * Dating IV Assignment: incorporate classes
  * file: index.php  is the default landing page, defines various routes
- * date: Saturday, May 18 2019
+ * date: Friday, May 23 2019
 */
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
