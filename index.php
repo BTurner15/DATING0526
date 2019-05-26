@@ -3,7 +3,7 @@
  * IT 328 Full Stack Web Development
  * Dating IV Assignment: incorporate classes
  * file: index.php  is the default landing page, defines various routes
- * date: Friday, May 23 2019
+ * date: Saturday, May 25 2019
 */
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -256,6 +256,9 @@ $f3->route('GET|POST /summary', function($f3) {
      * want to pause here and ensure that we have not been spoofed with indoor & outdoor interests arrays
      */
     //save the data gathered in interests IF A PREMIUM MEMBER
+    global $dbh;
+    $dbh = new Database();
+
     $memberType = $_SESSION['memberType'];
 
     if($memberType == 1) {
@@ -300,6 +303,16 @@ $f3->route('GET|POST /summary', function($f3) {
         if (isset($_SESSION['outdoor']) && get_class($_SESSION['member']) == "PremiumMember") {
             $_SESSION['member']->setOutdoor(implode(", ", $_SESSION['outdoor']));
         }
+    }
+    if($memberType == 0) { //a normal Member
+        $dbh->insertMember($_SESSION['fname'],$_SESSION['lname'],$_SESSION['age'],
+            $_SESSION['gender'],$_SESSION['phone'],$_SESSION['email'],$_SESSION['resState'],
+            $_SESSION['seekSex'],$_SESSION['bio'],0,"");
+    }
+    else {
+        $dbh->insertMember($_SESSION['fname'],$_SESSION['lname'],$_SESSION['age'],
+            $_SESSION['gender'],$_SESSION['phone'],$_SESSION['email'],$_SESSION['resState'],
+            $_SESSION['seekSex'],$_SESSION['bio'],1,"");
     }
     //Display summary, which concludes Dating III
     $view = new Template();
