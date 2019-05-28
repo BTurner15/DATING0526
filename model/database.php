@@ -4,7 +4,7 @@
  * IT 328 Full Stack Web Development
  * Dating IV Assignment: use data base
  * file: database.php
- * date: Monday, May 27 2019
+ * date: Tuesday, May 28 2019
  * class Database
  *
  * Here I want to conform to the required PEAR coding standards from the git go
@@ -42,9 +42,7 @@ CREATE TABLE member(`member_id` int AUTO_INCREMENT PRIMARY KEY,
                        `interest` varchar(40) DEFAULT NULL,
                        `type` varchar(8) DEFAULT NULL);
 */
-/*
- * CREATE TABLE member_interest(member_id int,  interest_id int);
- */
+
 // We will do this exactly as the instructor did in the pdo project, and
 // in the same order. Another point of reference is the grc-student GitHub example
 // First, provide the database connection via the mandatory database credentials
@@ -58,6 +56,7 @@ class Database
     {
         $this->connect();
     }
+
     /**
      * establish a data base connection
      */
@@ -66,24 +65,25 @@ class Database
     {
         try {
             //Instantiate a database object
-            $dbh = new PDO(DB_DSN, DB_USERNAME,
+            $dbM = new PDO(DB_DSN, DB_USERNAME,
                 DB_PASSWORD);
             //echo "Connected to database!!!";
-            return $dbh;
+            return $dbM;
         } catch (PDOException $e) {
             echo $e->getMessage();
             return;
         }
     }
+
     function getLastID()
     {
-        global $dbh;
+        global $dbM;
 
-        $dbh = $this->connect();
+        $dbM = $this->connect();
         // 1. define the query
         $sql = "SELECT LAST_INSERT_ID()";
         // 2. prepare the statement
-        $statement = $dbh->prepare($sql);
+        $statement = $dbM->prepare($sql);
         // 3. bind parameters
 
         // 4. execute the statement
@@ -97,13 +97,13 @@ class Database
 
     function getmemberID($email)
     {
-        global $dbh;
+        global $dbM;
 
         $dbh = $this->connect();
         // 1. define the query
         $sql = "SELECT * FROM member WHERE email = :email";
         // 2. prepare the statement
-        $statement = $dbh->prepare($sql);
+        $statement = $dbM->prepare($sql);
         // 3. bind parameters
         $statement->bindParam(':email', $email, PDO::PARAM_STR);
         // 4. execute the statement
@@ -116,14 +116,14 @@ class Database
 
     function getMembers()
     {
-        global $dbh;
+        global $dbM;
 
-        $dbh = $this->connect();
+        $dbM = $this->connect();
         // 1. define the query
         $sql = "SELECT * FROM member ORDER BY lname";
 
         // 2. prepare the statement
-        $statement = $dbh->prepare($sql);
+        $statement = $dbM->prepare($sql);
 
         // 3. bind parameters
 
@@ -138,16 +138,16 @@ class Database
 
     function insertMember($fname, $lname, $age, $gender, $phone, $email, $state, $seeking, $bio, $premium, $image)
     {
-        global $dbh;
+        global $dbM;
 
-        $dbh = $this->connect();
+        $dbM = $this->connect();
         // 1. define the query
 
         $sql = "INSERT INTO member(`fname`, `lname`, `age`, `gender`, `phone`, `email`, `state`, `seeking`, `bio`, `premium`, `image`)
             VALUES (:fname, :lname, :age, :gender, :phone, :email, :state, :seeking, :bio, :premium, :image)";
 
         // 2. prepare the statement
-        $statement = $dbh->prepare($sql);
+        $statement = $dbM->prepare($sql);
 
         //3. bind parameters
         $statement->bindParam(':fname', $fname, PDO::PARAM_STR);
@@ -172,14 +172,14 @@ class Database
 
     function getMember($id)
     {
-        global $dbh;
-        $dbh = $this->connect();
+        global $dbM;
+        $dbM = $this->connect();
 
         // 1. define the query
         $sql = "SELECT * FROM member WHERE member_id = :id";
 
         // 2. prepare the statement
-        $statement = $dbh->prepare($sql);
+        $statement = $dbM->prepare($sql);
 
         // 3. bind parameters
         $statement->bindParam(':id', $id, PDO::PARAM_INT);
@@ -209,27 +209,11 @@ class Database
             $result['gender'], $result['phone'], $result['email'], $result['state'],
             $result['seeking'], $result['bio']);
     }
-    function insertMember_Interest($member_id, $interest_id)
+
+    function close()
     {
-        global $dbh;
+        global $dbM;
+        $dbM = null;
 
-        $dbh = $this->connect();
-        //echo $member_id.'<br>';
-        // 1. define the query
-
-        $sql = "INSERT INTO member_interest(`member_id`, `interest_id`) VALUES (:member_id, :interest_id)";
-
-        // 2. prepare the statement
-        $statement = $dbh->prepare($sql);
-
-        //3. bind parameters
-        $statement->bindParam(':member_id', $member_id, PDO::PARAM_INT);
-        $statement->bindParam(':interest_id', $interest_id, PDO::PARAM_INT);
-
-        // 4. execute the statement
-        $success = $statement->execute();
-
-        // 5. return the result
-        return $success;
     }
 }

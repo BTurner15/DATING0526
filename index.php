@@ -234,10 +234,10 @@ $f3->route('GET|POST /interests', function($f3) {
 
 //Define a route to check the interest arrays
 $f3->route('GET|POST /getid', function() {
-    global $dbh;
-    $dbh = new Database();
+    global $dbM;
+    $dbM = new Database();
 
-    $row = $dbh->getMemberID('john@example.com');
+    $row = $dbM->getMemberID('john@example.com');
 
     print_r($row);
     $memberID = $row['member_id'];
@@ -254,8 +254,9 @@ $f3->route('GET|POST /summary', function($f3) {
      * want to pause here and ensure that we have not been spoofed with indoor & outdoor interests arrays
      */
     //save the data gathered in interests IF A PREMIUM MEMBER
-    global $dbh;
-    $dbh = new Database();
+    global $dbM;
+    $dbM = new Database();
+    global $dbMI;
 
     $memberType = $_SESSION['memberType'];
 
@@ -302,18 +303,18 @@ $f3->route('GET|POST /summary', function($f3) {
         }
     }
     if($memberType == 0) { //a normal Member
-        $dbh->insertMember($_SESSION['fname'],$_SESSION['lname'],$_SESSION['age'],
+        $dbM->insertMember($_SESSION['fname'],$_SESSION['lname'],$_SESSION['age'],
             $_SESSION['gender'],$_SESSION['phone'],$_SESSION['email'],$_SESSION['resState'],
             $_SESSION['seekSex'],$_SESSION['bio'],0,"");
     }
     else {
-        $dbh->insertMember($_SESSION['fname'],$_SESSION['lname'],$_SESSION['age'],
+        $dbM->insertMember($_SESSION['fname'],$_SESSION['lname'],$_SESSION['age'],
             $_SESSION['gender'],$_SESSION['phone'],$_SESSION['email'],$_SESSION['resState'],
             $_SESSION['seekSex'],$_SESSION['bio'],1,"");
     }
     //we still have to address the member-interests table. First we need his/her member_id
-    $memberID = $dbh->lastInsertId();
-
+    $memberID = $dbM->lastInsertId();
+    $dbM = null;
     //for some reason this is really limping along... getting desperate here... it is NOT
     //finding the new database routines for member_interest table....
     // going to try it manually
@@ -326,13 +327,14 @@ $f3->route('GET|POST /summary', function($f3) {
     if($memberType == 1) {
         //we have a total of (numIndoor + numOutdoor) (memberID, interest_id) pairs
         //to add to the member_interest table. process indoor first, then outdoor
-        //$dbh = null;
-        //$dbh = new Database();
+        //$dbM = null;
+        $dbMI = new Member_interest();
 
          //$type = 'indoor';
-         print_r($_SESSION['indoor']);
-         echo '<br>'.$_SESSION['numIndoor'].'<br>';
+         //print_r($_SESSION['indoor']);
+         //echo '<br>'.$_SESSION['numIndoor'].'<br>';
          //$interestID = getIndoorDBIndex($interest);
+
          for ($i = 0; $i < $_SESSION['numIndoor']; $i++) {
              $interest = array_pop($_SESSION['indoor']);
              $index = -1;
@@ -365,14 +367,13 @@ $f3->route('GET|POST /summary', function($f3) {
                      break;
              }
              $interestID = $index;
-             echo '<br>'.' '.$memberID.' '.$interestID.'<br>';
+             //echo '<br>'.' '.$memberID.' '.$interestID.'<br>';
              //ready to insert a (memberID, interestID) pair
-             $dbh->insertMember_Interest($memberID, $interestID);
+             $dbMI = new Member_interest();
+             $dbMI->insertMember_Interest($memberID, $interestID);
          }
 
-         /*
-         $dbh = null;
-         $dbh = new Database();
+
          //$type = 'outdoor';
          for ($i = 0; $i < $_SESSION['numOutdoor']; $i++) {
             $interest = array_pop($_SESSION['outdoor']);
@@ -400,18 +401,13 @@ $f3->route('GET|POST /summary', function($f3) {
                 default:
                     break;;
             }
-            $interestID = index;
-
-            //$interestID = getOutdoorDBIndex($interest);
-            //ready to insert a (memberID, interestID) pair
-            $dbh = null;
-            $dbh = new Database();
-            $dbh->insertMember_Interest($memberID, $interestID);
+             $interestID = $index;
+             //echo '<br>'.' '.$memberID.' '.$interestID.'<br>';
+             //ready to insert a (memberID, interestID) pair
+             $dbMI = new Member_interest();
+             $dbMI->insertMember_Interest($memberID, $interestID);
         }
-        */
     }
-
-
     //Display summary, which concludes Dating IV
     $view = new Template();
     echo $view->render('views/summary.html');
@@ -419,11 +415,12 @@ $f3->route('GET|POST /summary', function($f3) {
 });
 $f3->route('GET /admin', function($f3)
 {
-    global $dbh;
+    global $dbM;
+    global $dbMI;
 
-    $dbh = new Database();
+    $dbM = new Database();
 
-    $members = $dbh->getMembers();
+    $members = $dbM->getMembers();
     $f3->set('members', $members);
 
     $view = new Template();
@@ -432,12 +429,13 @@ $f3->route('GET /admin', function($f3)
 
 $f3->route('GET /admin/@id',
     function($f3, $params) {
-        global $dbh;
+        global $dbM;
+        global $dbMI;
 
-        $dbh = new Database();
+        $dbM = new Database();
 
         $id = $params['id'];
-        $member = $dbh->getMember($id);
+        $member = $dbM->getMember($id);
         $f3->set('member', $member);
 
 
