@@ -4,7 +4,7 @@
  * IT 328 Full Stack Web Development
  * Dating IV Assignment: use data base
  * file: database.php
- * date: Saturday, May 25 2019
+ * date: Monday, May 27 2019
  * class Database
  *
  * Here I want to conform to the required PEAR coding standards from the git go
@@ -49,13 +49,19 @@ CREATE TABLE member(`member_id` int AUTO_INCREMENT PRIMARY KEY,
 // in the same order. Another point of reference is the grc-student GitHub example
 // First, provide the database connection via the mandatory database credentials
 // stored as constants outside of public_html
-require_once ('/home/bturnerg/config.php');
+require('/home/bturnerg/config.php');
 
 class Database
 {
+
+    function __construct()
+    {
+        $this->connect();
+    }
     /**
      * establish a data base connection
      */
+
     function connect()
     {
         try {
@@ -69,26 +75,64 @@ class Database
             return;
         }
     }
+    function getLastID()
+    {
+        global $dbh;
+
+        $dbh = $this->connect();
+        // 1. define the query
+        $sql = "SELECT LAST_INSERT_ID()";
+        // 2. prepare the statement
+        $statement = $dbh->prepare($sql);
+        // 3. bind parameters
+
+        // 4. execute the statement
+        $statement->execute();
+        // 5. return the result
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        $memberID = row[0];
+        return $memberID;
+
+    }
+
+    function getmemberID($email)
+    {
+        global $dbh;
+
+        $dbh = $this->connect();
+        // 1. define the query
+        $sql = "SELECT * FROM member WHERE email = :email";
+        // 2. prepare the statement
+        $statement = $dbh->prepare($sql);
+        // 3. bind parameters
+        $statement->bindParam(':email', $email, PDO::PARAM_STR);
+        // 4. execute the statement
+        $statement->execute();
+        // 5. return the result
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+        return $row;
+    }
 
     function getMembers()
     {
         global $dbh;
 
         $dbh = $this->connect();
-        //1. define the query
+        // 1. define the query
         $sql = "SELECT * FROM member ORDER BY lname";
 
-        //2. prepare the statement
+        // 2. prepare the statement
         $statement = $dbh->prepare($sql);
 
-        //3. bind parameters
+        // 3. bind parameters
 
-        //4. execute the statement
+        // 4. execute the statement
         $statement->execute();
 
-        //5. return the result
+        // 5. return the result
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        //print_r($result);
+
         return $result;
     }
 
@@ -97,12 +141,12 @@ class Database
         global $dbh;
 
         $dbh = $this->connect();
-        //1. define the query
+        // 1. define the query
 
         $sql = "INSERT INTO member(`fname`, `lname`, `age`, `gender`, `phone`, `email`, `state`, `seeking`, `bio`, `premium`, `image`)
             VALUES (:fname, :lname, :age, :gender, :phone, :email, :state, :seeking, :bio, :premium, :image)";
 
-        //2. prepare the statement
+        // 2. prepare the statement
         $statement = $dbh->prepare($sql);
 
         //3. bind parameters
@@ -118,12 +162,10 @@ class Database
         $statement->bindParam(':premium', $premium, PDO::PARAM_INT);
         $statement->bindParam(':image', $image, PDO::PARAM_STR);
 
-        // echo $statement;
-
-        //4. execute the statement
+        // 4. execute the statement
         $success = $statement->execute();
 
-        //5. return the result
+        // 5. return the result
         return $success;
 
     }
@@ -133,19 +175,19 @@ class Database
         global $dbh;
         $dbh = $this->connect();
 
-        //1. define the query
-        $sql = "SELECT * FROM Members WHERE member_id = :id";
+        // 1. define the query
+        $sql = "SELECT * FROM member WHERE member_id = :id";
 
-        //2. prepare the statement
+        // 2. prepare the statement
         $statement = $dbh->prepare($sql);
 
-        //3. bind parameters
+        // 3. bind parameters
         $statement->bindParam(':id', $id, PDO::PARAM_INT);
 
-        //4. execute the statement
+        // 4. execute the statement
         $statement->execute();
 
-        //5. return the result
+        // 5. return the result
         $result = $statement->fetch(PDO::FETCH_ASSOC);
 
         //check if this is a premium member
@@ -157,8 +199,6 @@ class Database
                         $outdoor = explode(',',$interests[0]);
                         $indoor = explode(',',$interests[1]);
             */
-
-
             return new PremiumMember($result['fname'], $result['lname'], $result['age'],
                 $result['gender'], $result['phone'], $result['email'], $result['state'],
                 $result['seeking'], $result['bio'],$interests,"");
@@ -168,5 +208,28 @@ class Database
         return new Member($result['fname'], $result['lname'], $result['age'],
             $result['gender'], $result['phone'], $result['email'], $result['state'],
             $result['seeking'], $result['bio']);
+    }
+    function insertMember_Interest($member_id, $interest_id)
+    {
+        global $dbh;
+
+        $dbh = $this->connect();
+        //echo $member_id.'<br>';
+        // 1. define the query
+
+        $sql = "INSERT INTO member_interest(`member_id`, `interest_id`) VALUES (:member_id, :interest_id)";
+
+        // 2. prepare the statement
+        $statement = $dbh->prepare($sql);
+
+        //3. bind parameters
+        $statement->bindParam(':member_id', $member_id, PDO::PARAM_INT);
+        $statement->bindParam(':interest_id', $interest_id, PDO::PARAM_INT);
+
+        // 4. execute the statement
+        $success = $statement->execute();
+
+        // 5. return the result
+        return $success;
     }
 }

@@ -1,9 +1,9 @@
 <?php
 /* Bruce Turner, Professor Ostrander, Spring 2019
  * IT 328 Full Stack Web Development
- * Dating IIb Assignment: with form validation & sticky forms
+ * Dating IV Assignment: with form validation & sticky forms
  * file: validation-functions.php
- * date: Saturday, May 11 2019
+ * date: Monday, May 27 2019
  * "
  * validName() checks to see that a string is all alphabetic
  * validAge() checks to see that an age is numeric and between 18 and 118

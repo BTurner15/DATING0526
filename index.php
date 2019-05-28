@@ -3,7 +3,7 @@
  * IT 328 Full Stack Web Development
  * Dating IV Assignment: incorporate classes
  * file: index.php  is the default landing page, defines various routes
- * date: Saturday, May 25 2019
+ * date: Monday, May 27 2019
 */
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -233,23 +233,21 @@ $f3->route('GET|POST /interests', function($f3) {
 });
 
 //Define a route to check the interest arrays
-$f3->route('GET|POST /array', function($f3) {
-    echo "Here";
-    /*
-    $member = $_SESSION['member'];
-    $indoor = $_SESSION['indoor'];
-    $outdoor = $_SESSION['outdoor'];
-    $string = get_class($member);
-    echo "'$string'";
-    print_r($member);
-    echo "<br>"; echo "<br>";
-    print_r($indoor);
-    echo "<br>"; echo "<br>";
+$f3->route('GET|POST /getid', function() {
+    global $dbh;
+    $dbh = new Database();
 
-    print_r($outdoor);
-    echo "<br>";
-    */
-});
+    $row = $dbh->getMemberID('john@example.com');
+
+    print_r($row);
+    $memberID = $row['member_id'];
+    $memberID = int($memberID);
+    //echo '<br>'.gettype($memberID).'<br>';
+    $_SESSION['memberID'] = $memberID;
+    echo "<br>"; echo "<br>";
+    echo $memberID;
+
+ });
 //Define a summary route
 $f3->route('GET|POST /summary', function($f3) {
     /*
@@ -264,9 +262,9 @@ $f3->route('GET|POST /summary', function($f3) {
     if($memberType == 1) {
         $indoor = $_SESSION['member']->getIndoor();
         $freshIndoor = array();
-        $numElements = count($indoor);
+        $numIndoor = count($indoor);
         $ctr = -1;
-        for ($i = 0; $i < $numElements; $i++) {
+        for ($i = 0; $i < $numIndoor; $i++) {
             if (validIndoor($indoor[$i])) {
                 $ctr++;
                 $freshIndoor[$ctr] = $indoor[$i];
@@ -275,12 +273,13 @@ $f3->route('GET|POST /summary', function($f3) {
             }
         }
         $_SESSION['indoor'] = $freshIndoor;
+        $_SESSION['numIndoor'] = count($freshIndoor);
         //perform a similar duty to check for spoofing in outdoor interests
         $outdoor = $_SESSION['member']->getOutdoor();
         $freshOutdoor = array();
-        $numElements = count($outdoor);
+        $numOutdoor = count($outdoor);
         $ctr = -1;
-        for ($i = 0; $i < $numElements; $i++) {
+        for ($i = 0; $i < $numOutdoor; $i++) {
             if (validOutdoor($outdoor[$i])) {
                 $ctr++;
                 $freshOutdoor[$ctr] = $outdoor[$i];
@@ -289,12 +288,10 @@ $f3->route('GET|POST /summary', function($f3) {
             }
         }
         $_SESSION['outdoor'] = $freshOutdoor;
-
+        $_SESSION['numOutdoor'] = count($freshOutdoor);
         //we have the two sets of allowable interests available in the two arrays loaded at
-        //the beginning, our buddies indoorInterests[] and outdoorInterests[]
+        //the beginning, our buddies indoor[] and outdoor[]
         //just waiting for us! Yeah!
-
-
 
         if (isset($_SESSION['indoor']) && get_class($_SESSION['member']) == "PremiumMember") {
             $_SESSION['member']->setIndoor(implode(", ", $_SESSION['indoor']));
@@ -314,10 +311,155 @@ $f3->route('GET|POST /summary', function($f3) {
             $_SESSION['gender'],$_SESSION['phone'],$_SESSION['email'],$_SESSION['resState'],
             $_SESSION['seekSex'],$_SESSION['bio'],1,"");
     }
-    //Display summary, which concludes Dating III
+    //we still have to address the member-interests table. First we need his/her member_id
+    $memberID = $dbh->lastInsertId();
+
+    //for some reason this is really limping along... getting desperate here... it is NOT
+    //finding the new database routines for member_interest table....
+    // going to try it manually
+    $_SESSION['memberID'] = $memberID;
+
+    //now make the insertions into the member_interest table
+    $memberID = $_SESSION['memberID'];
+
+
+    if($memberType == 1) {
+        //we have a total of (numIndoor + numOutdoor) (memberID, interest_id) pairs
+        //to add to the member_interest table. process indoor first, then outdoor
+        //$dbh = null;
+        //$dbh = new Database();
+
+         //$type = 'indoor';
+         print_r($_SESSION['indoor']);
+         echo '<br>'.$_SESSION['numIndoor'].'<br>';
+         //$interestID = getIndoorDBIndex($interest);
+         for ($i = 0; $i < $_SESSION['numIndoor']; $i++) {
+             $interest = array_pop($_SESSION['indoor']);
+             $index = -1;
+             switch ($interest) {
+                 case "tv":
+                     $index = 1;
+                     break;
+                 case "puzzles":
+                     $index = 2;
+                     break;
+                 case "movies":
+                     $index = 3;
+                     break;
+                 case "reading":
+                     $index = 4;
+                     break;
+                 case "cooking":
+                     $index = 5;
+                     break;
+                 case "playing cards":
+                     $index = 6;
+                     break;
+                 case "board games":
+                     $index = 7;
+                     break;
+                 case "video games":
+                     $index = 8;
+                     break;
+                 default:
+                     break;
+             }
+             $interestID = $index;
+             echo '<br>'.' '.$memberID.' '.$interestID.'<br>';
+             //ready to insert a (memberID, interestID) pair
+             $dbh->insertMember_Interest($memberID, $interestID);
+         }
+
+         /*
+         $dbh = null;
+         $dbh = new Database();
+         //$type = 'outdoor';
+         for ($i = 0; $i < $_SESSION['numOutdoor']; $i++) {
+            $interest = array_pop($_SESSION['outdoor']);
+
+            $index = -1;
+            switch ($interest) {
+                case "hiking":
+                    $index = 1;
+                    break;
+                case "walking":
+                    $index = 2;
+                    break;
+                case "biking":
+                    $index = 3;
+                    break;
+                case "climbing":
+                    $index = 4;
+                    break;
+                case "swimming":
+                    $index = 5;
+                    break;
+                case "collecting":
+                    $index = 6;
+                    break;
+                default:
+                    break;;
+            }
+            $interestID = index;
+
+            //$interestID = getOutdoorDBIndex($interest);
+            //ready to insert a (memberID, interestID) pair
+            $dbh = null;
+            $dbh = new Database();
+            $dbh->insertMember_Interest($memberID, $interestID);
+        }
+        */
+    }
+
+
+    //Display summary, which concludes Dating IV
     $view = new Template();
     echo $view->render('views/summary.html');
 
 });
+$f3->route('GET /admin', function($f3)
+{
+    global $dbh;
+
+    $dbh = new Database();
+
+    $members = $dbh->getMembers();
+    $f3->set('members', $members);
+
+    $view = new Template();
+    echo $view->render('views/admin_page.html');
+});
+
+$f3->route('GET /admin/@id',
+    function($f3, $params) {
+        global $dbh;
+
+        $dbh = new Database();
+
+        $id = $params['id'];
+        $member = $dbh->getMember($id);
+        $f3->set('member', $member);
+
+
+        $f3->set('fname', $member->getFname());
+        $f3->set('lname', $member->getLname());
+        $f3->set('age', $member->getAge());
+        $f3->set('gender', $member->getGender());
+        $f3->set('phone', $member->getPhone());
+        $f3->set('email', $member->getEmail());
+        $f3->set('state', $member->getState());
+        $f3->set('seeking', $member->getSeeking());
+        $f3->set('bio', $member->getBio());
+
+        //if this is a premium member include other field information
+        if (get_class($member) == "PremiumMember")
+        {
+            $f3->set('indoor', $member->getInDoor());
+            $f3->set('outdoor', $member->getOutDoor());
+        }
+
+        //$view = new Template();
+        //echo $view->render('views/view-member.html');
+    });
 //Run fat free
 $f3->run();
