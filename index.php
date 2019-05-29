@@ -436,8 +436,8 @@ $f3->route('GET /admin/@member_id',
 
         $member_id = $params['member_id'];
         $member = $dbM->getMember($member_id);
+        $_SESSION['member'] = $member;
         $f3->set('member', $member);
-
 
         $f3->set('fname', $member->getFname());
         $f3->set('lname', $member->getLname());
@@ -456,8 +456,10 @@ $f3->route('GET /admin/@member_id',
             $f3->set('outdoor', $member->getOutDoor());
         }
 
+        //print_r($);
+
         $view = new Template();
-        echo $view->render('views/view-member.html');
+        echo $view->render('views/summary.html');
     });
 //Run fat free
 $f3->run();
