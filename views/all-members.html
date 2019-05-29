@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dating IV</title>
+</head>
+<body>
+    <h1>Dating Site Member List</h1>
+    <ol>
+    <repeat group ="{{ @members }}" value="{{ @member }}">
+        <li><a href="{{ @BASE }}/admin/{{ @member['member_id'] }}">
+            {{ @member['lname'] }} {{ @member['fname'] }}</a> -
+            {{ @member['lname'] }}, {{ @member['fname'] }} {{ @member['age'] }}
+            {{ @member['phone'] }} {{ @member['email'] }} {{ @member['state'] }}
+            {{ @member['gender'] }} {{ @member['seeking'] }}
+            <input type="checkbox" disabled
+            <check if="{{ @member['premium']==1}}">
+                checked
+            </check>
+            >
+        </li>
+    </repeat>
+    </ol>
+</body>
+</html>

@@ -3,9 +3,9 @@
  * Bruce Turner, Professor Ostrander, Spring 2019
  * IT 328 Full Stack Web Development
  * Dating IV Assignment: use data base
- * file: database.php
+ * file: memberDB.php
  * date: Tuesday, May 28 2019
- * class Database
+ * class Member
  *
  * Here I want to conform to the required PEAR coding standards from the git go
  * " Apply PEAR Standards to your class files, including a class-level docblock
@@ -22,7 +22,7 @@
 // the above is 80 characters
 /*
  * //"Copy your CREATE TABLE statements into a block comment at the top of your
- * //Database class."
+ * //Member class."
 CREATE TABLE member(`member_id` int AUTO_INCREMENT PRIMARY KEY,
                        `fname` varchar(25) DEFAULT NULL,
                        `lname` varchar(25) DEFAULT NULL,
@@ -38,10 +38,6 @@ CREATE TABLE member(`member_id` int AUTO_INCREMENT PRIMARY KEY,
                         );
 
 */
-/*CREATE TABLE interest(`interest_id` int AUTO_INCREMENT PRIMARY KEY,
-                       `interest` varchar(40) DEFAULT NULL,
-                       `type` varchar(8) DEFAULT NULL);
-*/
 
 // We will do this exactly as the instructor did in the pdo project, and
 // in the same order. Another point of reference is the grc-student GitHub example
@@ -49,7 +45,7 @@ CREATE TABLE member(`member_id` int AUTO_INCREMENT PRIMARY KEY,
 // stored as constants outside of public_html
 require('/home/bturnerg/config.php');
 
-class Database
+class MemberDB
 {
 
     function __construct()
@@ -115,7 +111,7 @@ class Database
     }
 
     function getMembers()
-    {
+    {   // get ALL the member rows
         global $dbM;
 
         $dbM = $this->connect();
@@ -136,7 +132,8 @@ class Database
         return $result;
     }
 
-    function insertMember($fname, $lname, $age, $gender, $phone, $email, $state, $seeking, $bio, $premium, $image)
+    function insertMember($fname, $lname, $age, $gender, $phone, $email, $state,
+                          $seeking, $bio, $premium, $image)
     {
         global $dbM;
 
@@ -170,7 +167,7 @@ class Database
 
     }
 
-    function getMember($id)
+    function getMember($member_id)
     {
         global $dbM;
         $dbM = $this->connect();
@@ -182,7 +179,7 @@ class Database
         $statement = $dbM->prepare($sql);
 
         // 3. bind parameters
-        $statement->bindParam(':id', $id, PDO::PARAM_INT);
+        $statement->bindParam(':id', $member_id, PDO::PARAM_INT);
 
         // 4. execute the statement
         $statement->execute();
@@ -191,29 +188,23 @@ class Database
         $result = $statement->fetch(PDO::FETCH_ASSOC);
 
         //check if this is a premium member
-        if($result['premium'] == 1)
-        {
-            $interests = explode(',',$result['interests']);
-            /*
-                        $interests = explode(';',$result['interests']);
-                        $outdoor = explode(',',$interests[0]);
-                        $indoor = explode(',',$interests[1]);
-            */
+        if ($result['premium'] == 1) {
+            //my efforts here fail
+
             return new PremiumMember($result['fname'], $result['lname'], $result['age'],
                 $result['gender'], $result['phone'], $result['email'], $result['state'],
-                $result['seeking'], $result['bio'],$interests,"");
+                $result['seeking'], $result['bio'], "");
         }
-
-        // if not premium we dont need some fields
-        return new Member($result['fname'], $result['lname'], $result['age'],
-            $result['gender'], $result['phone'], $result['email'], $result['state'],
-            $result['seeking'], $result['bio']);
+        else
+        {
+            return new Member($result['fname'], $result['lname'], $result['age'],
+                              $result['gender'], $result['phone'], $result['email'], $result['state'],
+                              $result['seeking'], $result['bio']);
+        }
     }
-
     function close()
     {
         global $dbM;
         $dbM = null;
-
     }
 }

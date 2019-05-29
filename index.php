@@ -50,8 +50,10 @@ $f3->set('states_ABBR', array('AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'F
     'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA',
     'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY' ));
 
-$f3->set('outdoorInterests', array('hiking', 'walking', 'biking', 'climbing', 'swimming', 'collecting'));
-$f3->set('indoorInterests', array('tv', 'puzzles', 'movies', 'reading', 'cooking', 'playing cards', 'board games', 'video games'));
+$f3->set('indoorInterests', array('tv', 'puzzles', 'movies', 'reading', 'cooking',
+         'playing cards', 'board games', 'video games'));
+$f3->set('outdoorInterests', array('hiking', 'walking', 'biking',
+         'climbing', 'swimming', 'collecting'));
 
 //Define a default route
 $f3->route('GET /', function(){
@@ -235,7 +237,7 @@ $f3->route('GET|POST /interests', function($f3) {
 //Define a route to check the interest arrays
 $f3->route('GET|POST /getid', function() {
     global $dbM;
-    $dbM = new Database();
+    $dbM = new Member();
 
     $row = $dbM->getMemberID('john@example.com');
 
@@ -255,7 +257,7 @@ $f3->route('GET|POST /summary', function($f3) {
      */
     //save the data gathered in interests IF A PREMIUM MEMBER
     global $dbM;
-    $dbM = new Database();
+    $dbM = new MemberDB();
     global $dbMI;
 
     $memberType = $_SESSION['memberType'];
@@ -372,12 +374,9 @@ $f3->route('GET|POST /summary', function($f3) {
              $dbMI = new Member_interest();
              $dbMI->insertMember_Interest($memberID, $interestID);
          }
-
-
          //$type = 'outdoor';
          for ($i = 0; $i < $_SESSION['numOutdoor']; $i++) {
             $interest = array_pop($_SESSION['outdoor']);
-
             $index = -1;
             switch ($interest) {
                 case "hiking":
@@ -417,25 +416,26 @@ $f3->route('GET /admin', function($f3)
 {
     global $dbM;
     global $dbMI;
+    global $dbI;
 
-    $dbM = new Database();
+    $dbM = new MemberDB();
 
     $members = $dbM->getMembers();
     $f3->set('members', $members);
 
     $view = new Template();
-    echo $view->render('views/admin_page.html');
+    echo $view->render('views/all-members.html');
 });
 
-$f3->route('GET /admin/@id',
+$f3->route('GET /admin/@member_id',
     function($f3, $params) {
         global $dbM;
         global $dbMI;
 
-        $dbM = new Database();
+        $dbM = new MemberDB();
 
-        $id = $params['id'];
-        $member = $dbM->getMember($id);
+        $member_id = $params['member_id'];
+        $member = $dbM->getMember($member_id);
         $f3->set('member', $member);
 
 
@@ -456,8 +456,8 @@ $f3->route('GET /admin/@id',
             $f3->set('outdoor', $member->getOutDoor());
         }
 
-        //$view = new Template();
-        //echo $view->render('views/view-member.html');
+        $view = new Template();
+        echo $view->render('views/view-member.html');
     });
 //Run fat free
 $f3->run();

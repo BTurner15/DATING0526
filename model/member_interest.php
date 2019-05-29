@@ -27,9 +27,9 @@ class Member_interest
     function insertMember_Interest($memberID, $interestID)
     {
         global $dbMI;
-        echo '<br>'.' '.$memberID.' '.$interestID.'<br>';
+        //echo '<br>'.' '.$memberID.' '.$interestID.'<br>';
         $dbMI = $this->connect();
-        //echo $member_id.'<br>';
+
         // 1. define the query
 
         $sql = "INSERT INTO member_interest(`member_id`, `interest_id`) VALUES (:memberID, :interestID)";
